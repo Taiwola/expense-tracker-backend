@@ -5,12 +5,14 @@ import {TypeOrmModule} from "@nestjs/typeorm";
 import { typeormConfigAsync } from 'config/typeOrmConfig';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './modules/user/user.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
     TypeOrmModule.forRootAsync(typeormConfigAsync),
     ConfigModule.forRoot({envFilePath: '.env', isGlobal: true}),
-    UserModule
+    UserModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [AppService],
