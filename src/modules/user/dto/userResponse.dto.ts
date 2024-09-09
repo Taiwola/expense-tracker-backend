@@ -1,4 +1,4 @@
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 
 export class UserResponseDto {
   @Expose()
@@ -20,8 +20,13 @@ export class UserResponseDto {
   image: string;
 
   @Expose()
+  refreshToken: string
+
+  @Expose()
+  @Type(() => Date) 
   createdAt: Date;
 
   @Expose()
+  @Type(() => Date) 
   updatedAt: Date;
 }

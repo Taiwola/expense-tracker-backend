@@ -4,6 +4,8 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { plainToInstance } from 'class-transformer';
 import { UserResponseDto } from './dto/userResponse.dto'; // Create this DTO for response
+import { Roles } from '../auth/decorator/roles.decorator';
+import { UserRoles } from './entities/user.entity';
 
 @Controller('user')
 export class UserController {
@@ -14,6 +16,7 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
+  @Roles(UserRoles.ADMIN)
   @Get()
   async findAll() {
     const users = await this.userService.findAll();

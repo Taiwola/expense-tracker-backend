@@ -1,6 +1,7 @@
 import { IsEmail, IsOptional, IsString, Length } from 'class-validator';
 import { Exclude, Expose } from 'class-transformer';
 import { Optional } from '@nestjs/common';
+import { UserRoles } from '../entities/user.entity';
 
 export class CreateUserDto {
   
@@ -24,4 +25,11 @@ export class CreateUserDto {
   @IsOptional() // Optional field
   @IsString({ message: 'Image must be a string (URL or path)' })
   image?: string;
+
+  @IsOptional() // Optional field
+  @IsString()
+  roles?: UserRoles;
+
+  @IsOptional()
+  refreshToken?: string
 }

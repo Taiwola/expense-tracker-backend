@@ -4,10 +4,12 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import * as compression from 'compression';
 import helmet from 'helmet';
 import { ValidationPipe } from '@nestjs/common';
+import { ExcludeNullInterceptor } from './modules/auth/interceptors/excludeNull.interceptors';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.setGlobalPrefix('api');
+  app.useGlobalInterceptors(new ExcludeNullInterceptor());
   app.enableCors({
     origin: "*"
   });

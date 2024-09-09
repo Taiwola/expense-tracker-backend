@@ -6,15 +6,39 @@ import { typeormConfigAsync } from 'config/typeOrmConfig';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { ExcludeNullInterceptor } from './modules/auth/interceptors/excludeNull.interceptors';
+import { AuthGuard } from './modules/auth/guard/auth.guard';
+import { JwtModule } from '@nestjs/jwt';
+import { jwtConfig } from 'config/jwt.config';
+import { RolesGuard } from './modules/auth/guard/roles.guard';
+import { CategoryModule } from './modules/category/category.module';
+
 
 @Module({
   imports: [
     TypeOrmModule.forRootAsync(typeormConfigAsync),
     ConfigModule.forRoot({envFilePath: '.env', isGlobal: true}),
     UserModule,
-    AuthModule
+    AuthModule,
+    JwtModule.registerAsync(jwtConfig),
+    CategoryModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ExcludeNullInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard
+    }
+  ],
 })
 export class AppModule {}
