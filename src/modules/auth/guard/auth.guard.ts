@@ -42,7 +42,9 @@ export class AuthGuard implements CanActivate {
           }
 
           const payload = this.jwtService.decode(token) as JwtPayload;
+
           request.user = payload;
+  
           return true
     } catch (error) {
         console.error("Auth Guard Error: ", error);

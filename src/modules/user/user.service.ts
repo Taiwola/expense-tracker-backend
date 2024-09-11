@@ -16,7 +16,8 @@ export class UserService {
 
   async findById(id: string) {
     const user =  await this.userRepository.findOne({
-      where: {id: id}
+      where: {id: id},
+      relations: ['categories']
     });
 
     return user
@@ -24,7 +25,8 @@ export class UserService {
 
   async findByEmail(email: string) {
     const user =  await this.userRepository.findOne({
-      where: {email: email}
+      where: {email: email},
+      relations: ['categories']
     });
 
     return user;
@@ -43,7 +45,9 @@ export class UserService {
   }
 
   async findAll() {
-    const users = await this.userRepository.find();
+    const users = await this.userRepository.find({
+      relations: ['categories']
+    });
    return users
   }
 

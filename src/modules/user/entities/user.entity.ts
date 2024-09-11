@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Category } from 'src/modules/category/entities/category.entity';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 
 
 export enum UserRoles {
@@ -50,4 +51,7 @@ export class User {
         onUpdate: 'CURRENT_TIMESTAMP',  // Automatically update the timestamp on updates
     })
     updatedAt: Date;
+
+    @OneToMany(() => Category, (category) => category.user)
+    categories:Category[]
 }

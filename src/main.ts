@@ -5,6 +5,16 @@ import * as compression from 'compression';
 import helmet from 'helmet';
 import { ValidationPipe } from '@nestjs/common';
 import { ExcludeNullInterceptor } from './modules/auth/interceptors/excludeNull.interceptors';
+import { UserReq } from './modules/auth/interface/auth.interface';
+
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Express {
+    interface Request {
+      user?: UserReq;
+    }
+  }
+}
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
