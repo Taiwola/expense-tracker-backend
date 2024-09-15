@@ -13,6 +13,10 @@ import { JwtModule } from '@nestjs/jwt';
 import { jwtConfig } from 'config/jwt.config';
 import { RolesGuard } from './modules/auth/guard/roles.guard';
 import { CategoryModule } from './modules/category/category.module';
+import { BudgetModule } from './modules/budget/budget.module';
+import { IncomeModule } from './modules/income/income.module';
+import { ExpenseModule } from './modules/expense/expense.module';
+import { ReportsModule } from './modules/reports/reports.module';
 
 
 @Module({
@@ -22,7 +26,11 @@ import { CategoryModule } from './modules/category/category.module';
     UserModule,
     AuthModule,
     JwtModule.registerAsync(jwtConfig),
-    CategoryModule
+    CategoryModule,
+    BudgetModule,
+    IncomeModule,
+    ExpenseModule,
+    ReportsModule
   ],
   controllers: [AppController],
   providers: [

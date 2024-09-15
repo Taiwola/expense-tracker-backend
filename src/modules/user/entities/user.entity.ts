@@ -1,4 +1,7 @@
+import { Budget } from 'src/modules/budget/entities/budget.entity';
 import { Category } from 'src/modules/category/entities/category.entity';
+import { Expense } from 'src/modules/expense/entities/expense.entity';
+import { Income } from 'src/modules/income/entities/income.entity';
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 
 
@@ -54,4 +57,14 @@ export class User {
 
     @OneToMany(() => Category, (category) => category.user)
     categories:Category[]
+
+    @OneToMany(() => Budget, (budget) => budget.user)
+    budgets: Budget[]
+
+    
+    @OneToMany(() => Income, (income) => income.user)
+    incomes: Income[]
+
+    @OneToMany(() => Expense, (expense) => expense.user)
+    expenses: Expense[]
 }

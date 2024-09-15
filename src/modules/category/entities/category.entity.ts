@@ -1,5 +1,6 @@
+import { Expense } from "src/modules/expense/entities/expense.entity";
 import { User } from "src/modules/user/entities/user.entity";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
 export class Category {
@@ -11,8 +12,23 @@ export class Category {
 
   @Column({ type: 'text', nullable: true })
   description?: string;
-
   
   @ManyToOne(() => User, (user) => user.categories)
   user: User;
+
+  @OneToMany(() => Expense, (expense) => expense.category)
+  expenses: Expense[];
+
+  @CreateDateColumn({
+    type: 'timestamptz',
+    default: () => 'CURRENT_TIMESTAMP',
+})
+createdAt: Date;
+
+@UpdateDateColumn({
+    type: 'timestamptz',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',  // Automatically update the timestamp on updates
+})
+updatedAt: Date;
 }

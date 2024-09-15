@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -16,7 +16,7 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
-  @Roles(UserRoles.ADMIN)
+  @Roles(UserRoles.USER)
   @Get()
   async findAll() {
     const users = await this.userService.findAll();
@@ -38,7 +38,7 @@ export class UserController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const user = await this.userService.findOne(id);
     
     // Transform user data and add fullName
@@ -57,7 +57,7 @@ export class UserController {
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  async update(@Param('id', ParseUUIDPipe) id: string, @Body() updateUserDto: UpdateUserDto) {
     const updatedUser = await this.userService.update(id, updateUserDto);
 
     // Return the transformed instance of the updated user
@@ -75,7 +75,7 @@ export class UserController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.userService.remove(id);
   }
 }
