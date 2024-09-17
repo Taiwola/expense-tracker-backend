@@ -7,8 +7,18 @@ import { ExpenseService } from '../expense/expense.service';
 import { Request } from 'express';
 import { User } from '../user/entities/user.entity';
 import { createWriteStream } from 'fs';
-import { PDFDocument, rgb } from 'pdf-lib';
+import * as pdfmake from 'pdfmake/build/pdfmake';
+import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import { randomUUID } from 'crypto';
+
+
+
+(pdfmake as any).vfs = pdfFonts.pdfMake.vfs; // Set the virtual file system for fonts
+// Define a custom type for document definitions
+type DocumentDefinition = {
+  content: any[];
+  styles?: { [key: string]: any };
+};
 
 @Injectable()
 export class ReportsService {
@@ -261,73 +271,87 @@ export class ReportsService {
     return alerts;
   }
 
-  async generatePDFReport(req: Request) {
+  
+  async  generatePDFReport(req: Request) {
     const userId = req.user.id;
     const user = await this.userService.findOne(userId);
 
     if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
-    const doc = await PDFDocument.create();
-    const page = doc.addPage([600, 800]);
-    const { width, height } = page.getSize();
-    const fontSize = 12;
+    // Define the document content using pdfmake
+    const docDefinition: DocumentDefinition  = {
+        content: [
+            { text: 'Financial Report', style: 'header' },
 
-    // Define colors
-    const headerColor = rgb(0.2, 0.5, 0.8); // Light blue
-    const rowColor = rgb(0.9, 0.9, 0.9);    // Light gray
-    const textColor = rgb(0, 0, 0);         // Black
+            { text: 'Budgets', style: 'subheader' },
+            {
+                table: {
+                    headerRows: 1,
+                    widths: ['*', '*', '*'],
+                    body: [
+                        ['Year', 'Month', 'Amount'],
+                        ...user.budgets.map(budget => [budget.year.toString(), budget.month, budget.amount.toString()])
+                    ]
+                },
+                layout: 'lightHorizontalLines'
+            },
 
-    const drawTable = (data: { label: string, value: string }[], startY: number) => {
-      let yPosition = startY;
+            { text: 'Expenses', style: 'subheader' },
+            {
+                table: {
+                    headerRows: 1,
+                    widths: ['*', '*'],
+                    body: [
+                        ['Category', 'Amount'],
+                        ...user.expenses.map(expense => [expense.category.name, expense.amount.toString()])
+                    ]
+                },
+                layout: 'lightHorizontalLines'
+            },
 
-      // Draw table header
-      page.drawRectangle({ x: 50, y: yPosition, width: 500, height: 20, color: headerColor });
-      page.drawText('Label', { x: 55, y: yPosition + 5, size: fontSize, color: textColor });
-      page.drawText('Value', { x: 305, y: yPosition + 5, size: fontSize, color: textColor });
-      yPosition -= 20;
-
-      // Draw table rows
-      data.forEach((row, index) => {
-        page.drawRectangle({ x: 50, y: yPosition, width: 500, height: 20, color: index % 2 === 0 ? rowColor : rgb(1, 1, 1) });
-        page.drawText(row.label, { x: 55, y: yPosition + 5, size: fontSize, color: textColor });
-        page.drawText(row.value, { x: 305, y: yPosition + 5, size: fontSize, color: textColor });
-        yPosition -= 20;
-      });
-
-      return yPosition;
+            { text: 'Incomes', style: 'subheader' },
+            {
+                table: {
+                    headerRows: 1,
+                    widths: ['*', '*'],
+                    body: [
+                        ['Source', 'Amount'],
+                        ...user.incomes.map(income => [income.source, income.amount.toString()])
+                    ]
+                },
+                layout: 'lightHorizontalLines'
+            }
+        ],
+        styles: {
+            header: {
+                fontSize: 20,
+                bold: true,
+                margin: [0, 0, 0, 10]
+            },
+            subheader: {
+                fontSize: 18,
+                margin: [0, 20, 0, 10]
+            }
+        }
     };
 
-    let yPosition = height - 50;
-    page.drawText('Financial Report', { x: 50, y: yPosition, size: 20, color: textColor });
-    yPosition -= 50;
-
-    const budgets = user.budgets || [];
-    const expenses = user.expenses || [];
-    const incomes = user.incomes || [];
-
-    // Draw Budgets table
-    yPosition = drawTable(budgets.map(budget => ({ label: 'Budget', value: `${budget.amount}`, year: `${budget.year}`, month: `${budget.month}`  })), yPosition);
-
-    // Draw Expenses table
-    yPosition -= 20;
-    page.drawText('Expenses:', { x: 50, y: yPosition, size: fontSize, color: textColor });
-    yPosition -= 20;
-    yPosition = drawTable(expenses.map(expense => ({ label: expense.category.name, value: `${expense.amount}` })), yPosition);
-
-    // Draw Incomes table
-    yPosition -= 20;
-    page.drawText('Incomes:', { x: 50, y: yPosition, size: fontSize, color: textColor });
-    yPosition -= 20;
-    yPosition = drawTable(incomes.map(income => ({ label: income.source, value: `${income.amount}` })), yPosition);
+    // Create PDF
+    const pdfDoc = pdfmake.createPdf(docDefinition);
+    const pdfBytes = await new Promise<Buffer>((resolve, reject) => {
+        pdfDoc.getBuffer((buffer) => {
+            resolve(buffer);
+        });
+    });
 
     const randomUniquecode = randomUUID();
-    const pdfBytes = await doc.save();
     const filePath = `reports/user_${userId}_report_${randomUniquecode}.pdf`;
 
     createWriteStream(filePath).write(pdfBytes);
 
     return { message: 'PDF report generated successfully', filePath };
-  }
+}
+  
+
 }
