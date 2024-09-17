@@ -17,9 +17,10 @@ export class UserService {
   async findById(id: string) {
     const user =  await this.userRepository.findOne({
       where: {id: id},
-      relations: ['categories', 'budgets', 'incomes', 'expenses'],
+      relations: ['categories', 'budgets', 'incomes', 'expenses', 'categories.expenses', 'budgets.expenses', 'expenses.category'],
       select: {password: false}
     });
+
 
     return user
   }
@@ -51,7 +52,13 @@ export class UserService {
       relations: ['categories', 'budgets', 'incomes', 'expenses'],
       select: {password: false}
     });
-   return users
+
+    const removePassword = users.map((user) => {
+      const {password, ...rest} = user;
+      return rest
+    })
+
+   return removePassword;
   }
 
   async findOne(id: string) {

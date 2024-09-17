@@ -15,7 +15,7 @@ export class Budget {
   @Column({type: "text"})
   month: string;
 
-  @Column({type: "numeric"})
+  @Column({type: "int", nullable: true})
   year: number;
 
   @CreateDateColumn({

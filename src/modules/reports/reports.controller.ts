@@ -1,22 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Query, Res, HttpException, HttpStatus } from '@nestjs/common';
 import { ReportsService } from './reports.service';
-import { CreateReportDto } from './dto/create-report.dto';
-import { UpdateReportDto } from './dto/update-report.dto';
-import {Request} from "express";
+import {Request, Response} from "express";
 
 @Controller('reports')
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
-  @Post()
-  create(@Body() createReportDto: CreateReportDto) {
-    return this.reportsService.create(createReportDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.reportsService.findAll();
-  }
 
   @Get('total')
   async getAllTotal(
@@ -30,18 +19,126 @@ export class ReportsController {
     }
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.reportsService.findOne(+id);
+  @Get('expense_percentage')
+  async getExpensePercentageByCategory(
+    @Req() req: Request
+  )  {
+    const expenses = await this.reportsService.getPercentageOfExpenseToBudgetByCategories(req);
+    return {
+      message: "Request was successfull",
+      data: expenses,
+      status: true
+    }
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateReportDto: UpdateReportDto) {
-    return this.reportsService.update(+id, updateReportDto);
+  @Get()
+  async getTotalAmountForTheMonth(
+    @Query('year') year: string,
+    @Query('month') month: string,
+    @Req() req: Request
+  ) {
+    const amount = await this.reportsService.generateTotalForAmount(req, +year, month);
+    return {
+      message: "Request was successful",
+      data: amount,
+      status: true
+    }
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.reportsService.remove(+id);
+  @Get('monthly-trends')
+  async getMonthlyTrends(
+    @Req() req: Request
+  ) {
+    const trends = await this.reportsService.getMonthlyTrends(req);
+    return {
+      message: "Request was successful",
+      data: trends,
+      status: true
+    }
+  }
+
+  @Get('category-breakdown')
+  async getCategoryWiseBreakdown(
+    @Req() req: Request
+  ) {
+    const breakdown = await this.reportsService.getCategoryWiseBreakdown(req);
+    return {
+      message: "Request was successful",
+      data: breakdown,
+      status: true
+    }
+  }
+
+  @Get('annual-budget')
+  async getAnnualBudgetPlanning(
+    @Req() req: Request
+  ) {
+    const budget = await this.reportsService.getAnnualBudgetPlanning(req);
+    return {
+      message: "Request was successful",
+      data: budget,
+      status: true
+    }
+  }
+
+  @Get('forecast-expenses')
+  async forecastExpenses(@Req() req: Request) {
+    try {
+      const forecast = await this.reportsService.forecastExpenses(req);
+      return {
+        message: "Request was successful",
+        data: forecast,
+        status: true
+      }
+    } catch (error) {
+      console.error(error);
+      throw new HttpException("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Post('custom-report')
+  async generateCustomReport(
+    @Req() req: Request,
+    @Body() startDate: string,
+    @Body() endDate: string
+) {
+    try {
+      const report = await this.reportsService.generateCustomReport(req, new Date(startDate), new Date(endDate));
+      return {
+        message: "Request was successful",
+        data: report,
+        status: true
+      }
+    } catch (error) {
+      console.error(error);
+      throw new HttpException("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get('budget-alerts')
+  async checkBudgetAlerts(@Req() req: Request) {
+    try {
+      const alerts = await this.reportsService.checkBudgetAlerts(req);
+      return {
+        message: "Request was successful",
+        data: alerts,
+        status: true
+      }
+    } catch (error) {
+      console.error(error);
+      throw new HttpException("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get('export-pdf')
+  async exportReportToPDF(
+    @Req() req: Request, 
+    @Res({passthrough: true}) res: Response) {
+    try {
+      const { filePath } = await this.reportsService.generatePDFReport(req);
+      return res.download(filePath); // Download the generated PDF
+    } catch (error) {
+      return res.status(error.status || 500).json({ message: error.message });
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Query } from '@nestjs/common';
 import { BudgetService } from './budget.service';
 import { CreateBudgetDto } from './dto/create-budget.dto';
 import { UpdateBudgetDto } from './dto/update-budget.dto';
@@ -34,8 +34,11 @@ export class BudgetController {
   }
 
   @Get()
-  async findAll() {
-    const budgets = await this.budgetService.findAll();
+  async findAll(
+    @Query('year') year: string,
+    @Query('month') month: string
+  ) {
+    const budgets = await this.budgetService.findAll(year, month);
 
     // Transform users in each budget
     const transformedBudgets = budgets.map(budget => {

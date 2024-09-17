@@ -19,23 +19,24 @@ export class UserController {
   @Roles(UserRoles.USER)
   @Get()
   async findAll() {
-    const users = await this.userService.findAll();
-    
-    // Transform user data and add fullName
-    const transformedUsers = users.map(user => ({
+    const usersArr = await this.userService.findAll();
+  
+    // Transform user data and add fullName, budgets, incomes, and expenses
+    const users = usersArr.map(user => ({
       ...user,
       fullName: `${user.firstName} ${user.lastName}`,
+      budgets: user.budgets || [],  
+      incomes: user.incomes || [], 
+      expenses: user.expenses || [] 
     }));
-    
-    // Return the transformed instance
-    const transform = plainToInstance(UserResponseDto, transformedUsers, { excludeExtraneousValues: true });
-
+  
     return {
-      message: "Request was successfull",
-      data: transform,
+      message: "Request was successful",
+      data: users,
       status: true
-    }
+    };
   }
+  
 
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
@@ -45,13 +46,17 @@ export class UserController {
     const transformedUser = {
       ...user,
       fullName: `${user.firstName} ${user.lastName}`,
+      budgets: user.budgets || [], 
+      incomes: user.incomes || [], 
+      expenses: user.expenses || [] 
     };
+
+    const {password, ...rest} = transformedUser;
     
-    const transform = plainToInstance(UserResponseDto, transformedUser, { excludeExtraneousValues: true });
 
     return {
       message: "Request was successfull",
-      data: transform,
+      data: rest,
       status: true
     }
   }

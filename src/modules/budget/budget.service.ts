@@ -32,23 +32,40 @@ export class BudgetService {
     }
   }
 
-  async findAll() {
+  async findAll(year?: string, month?: string) {
     try {
+      const where: any = {};
+  
+      // Add year to the filter if it's provided
+      if (year) {
+        where.year = parseInt(year, 10);
+      }
+  
+      // Add month to the filter if it's provided
+      if (month) {
+        where.month = month.toLowerCase();
+      }
+  
+      // Fetch budgets with optional filtering based on year and month
       const budgets = await this.budgetRepository.find({
-        relations: ['user']
+        where,
+        relations: ['user', 'incomes', 'expenses']
       });
+  
       return budgets;
     } catch (error) {
       console.error(error);  // Log the error
       throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+  
+  
 
   async findOne(id: string) {
     try {
       const budget = await this.budgetRepository.findOne({
         where: { id: id },
-        relations: ['user']
+        relations: ['user', 'incomes', 'expenses']
       });
 
       if (!budget) throw new HttpException('Budget does not exist', HttpStatus.NOT_FOUND);

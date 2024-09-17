@@ -40,13 +40,16 @@ export class ExpenseService {
   }
 
   async findAll() {
-   const expenses = await this.expenseRepository.find();
+   const expenses = await this.expenseRepository.find({
+    relations: ['budget', 'category', 'user']
+   });
    return expenses
   }
 
   async findOne(id: string) {
     const expense = await this.expenseRepository.findOne({
-      where: {id: id}
+      where: {id: id},
+      relations: ['budget', 'category', 'user']
     });
     return expense
   }
