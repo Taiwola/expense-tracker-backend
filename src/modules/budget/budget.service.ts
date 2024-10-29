@@ -32,7 +32,7 @@ export class BudgetService {
     }
   }
 
-  async findAll(year?: string, month?: string) {
+  async findAll(year?: string, month?: string, userId?: string) {
     try {
       const where: any = {};
   
@@ -46,18 +46,29 @@ export class BudgetService {
         where.month = month.toLowerCase();
       }
   
-      // Fetch budgets with optional filtering based on year and month
+      // Add user filtering if userId is provided
+      if (userId) {
+        const userExist = await this.userService.findOne(userId);
+        if (!userExist) {
+          throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+        }
+        // Add nested user filtering using relations
+        where.user = { id: userId };
+      }
+  
+      // Fetch budgets with optional filtering based on year, month, and user
       const budgets = await this.budgetRepository.find({
         where,
-        relations: ['user', 'incomes', 'expenses']
+        relations: ['user', 'incomes', 'expenses'],
       });
   
       return budgets;
     } catch (error) {
-      console.error(error);  // Log the error
+      console.error(error); // Log the error
       throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+  
   
   
 

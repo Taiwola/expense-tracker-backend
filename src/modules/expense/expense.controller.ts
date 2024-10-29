@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, ParseUUIDPipe, Query } from '@nestjs/common';
 import { ExpenseService } from './expense.service';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
@@ -22,8 +22,8 @@ export class ExpenseController {
   }
 
   @Get()
-  async findAll() {
-   const expenses = await this.expenseService.findAll();
+  async findAll(@Query('userId') userId: string) {
+   const expenses = await this.expenseService.findAll(userId);
    return {
     message: "Request was successfull",
     data: expenses,

@@ -76,7 +76,7 @@ export class AuthService {
             await this.userService.update(user.id, { refreshToken });
         }
     
-        const token = await this.jwtService.signAsync(payload, { expiresIn: '2h' });
+        const token = await this.jwtService.signAsync(payload, { expiresIn: '1d' });
     
         // Add fullName field to the user object
         const transformedUser = {

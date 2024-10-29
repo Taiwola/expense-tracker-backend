@@ -36,9 +36,10 @@ export class BudgetController {
   @Get()
   async findAll(
     @Query('year') year: string,
-    @Query('month') month: string
+    @Query('month') month: string,
+    @Query('userId') userId: string,
   ) {
-    const budgets = await this.budgetService.findAll(year, month);
+    const budgets = await this.budgetService.findAll(year, month, userId);
 
     // Transform users in each budget
     const transformedBudgets = budgets.map(budget => {
