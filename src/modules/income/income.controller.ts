@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, ParseUUIDPipe, Query } from '@nestjs/common';
 import { IncomeService } from './income.service';
 import { CreateIncomeDto } from './dto/create-income.dto';
 import { UpdateIncomeDto } from './dto/update-income.dto';
@@ -22,7 +22,11 @@ export class IncomeController {
   }
 
   @Get()
-  async findAll() {
+  async findAll(
+    @Query('year') year: string,
+    @Query('month') month: string,
+    @Query('userId') userId: string,
+  ) {
     const incomes = await this.incomeService.findAll();
     return {
       message: "Request was successfull",

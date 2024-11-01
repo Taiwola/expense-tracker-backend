@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { Budget } from 'src/modules/budget/entities/budget.entity';
 
@@ -11,12 +11,15 @@ export class Income {
   amount: number;
 
   @Column({type: "varchar"})
+  @Index()
   month: string;
 
   @Column('int')
+  @Index()
   year: number;
 
   @Column({type: "text"})
+  @Index()
   source: string
 
   @CreateDateColumn({
@@ -33,6 +36,7 @@ createdAt: Date;
 updatedAt: Date;
 
   @ManyToOne(() => User, (user) => user.incomes)
+  @Index()
   user: User;
 
   @ManyToOne(() => Budget, (budget) => budget.incomes)

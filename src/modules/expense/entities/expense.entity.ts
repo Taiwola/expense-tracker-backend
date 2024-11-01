@@ -1,7 +1,7 @@
 import { Budget } from "src/modules/budget/entities/budget.entity";
 import { Category } from "src/modules/category/entities/category.entity";
 import { User } from "src/modules/user/entities/user.entity";
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
 export class Expense {
@@ -18,9 +18,11 @@ export class Expense {
     budget: Budget;
 
     @ManyToOne(() => Category, (category)=> category.expenses)
+    @Index()
     category: Category;
 
     @ManyToOne(() => User, (user) => user.expenses)
+    @Index()
     user: User;
 
     @CreateDateColumn({

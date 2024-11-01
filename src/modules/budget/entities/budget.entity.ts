@@ -37,6 +37,6 @@ updatedAt: Date;
   @OneToMany(() => Income, (income) => income.budget)
   incomes: Income[]
   
-  @OneToMany(() => Expense, (expense) => expense.budget)
+  @OneToMany(() => Expense, (expense) => expense.budget,  { cascade: true, onDelete: 'CASCADE' })
   expenses: Expense[] 
 }

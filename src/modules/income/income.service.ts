@@ -49,8 +49,32 @@ export class IncomeService {
     }
   }
 
-  async findAll() {
-    const incomes = await this.incomeRepository.find();
+  async findAll(userId?:string, month?:string, year?:string) {
+    const where: any = {};
+  
+    // Add year to the filter if it's provided
+    if (year) {
+      where.year = parseInt(year, 10);
+    }
+
+    // Add month to the filter if it's provided
+    if (month) {
+      where.month = month.toLowerCase();
+    }
+
+    // Add user filtering if userId is provided
+    if (userId) {
+      const userExist = await this.userService.findOne(userId);
+      if (!userExist) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+      // Add nested user filtering using relations
+      where.user = { id: userId };
+    }
+    const incomes = await this.incomeRepository.find({
+      where,
+      relations: ['user', 'budget'],
+    });
     return incomes;
   }
 
