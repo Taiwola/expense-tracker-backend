@@ -10,6 +10,7 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ExcludeNullInterceptor } from './modules/auth/interceptors/excludeNull.interceptors';
 import { AuthGuard } from './modules/auth/guard/auth.guard';
 import { JwtModule } from '@nestjs/jwt';
+import { MailerModule } from '@nestjs-modules/mailer';
 import { jwtConfig } from 'config/jwt.config';
 import { RolesGuard } from './modules/auth/guard/roles.guard';
 import { CategoryModule } from './modules/category/category.module';
@@ -23,6 +24,20 @@ import { ReportsModule } from './modules/reports/reports.module';
   imports: [
     TypeOrmModule.forRootAsync(typeormConfigAsync),
     ConfigModule.forRoot({envFilePath: '.env', isGlobal: true}),
+    MailerModule.forRoot({
+      transport: {
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true, // Use SSL/TLS for port 465
+        auth: {
+          user: process.env.AUTH_EMAIL,
+          pass: process.env.APP_PASS,
+        },
+        logger: true,
+        debug: true,
+      },
+    }),
+    
     UserModule,
     AuthModule,
     JwtModule.registerAsync(jwtConfig),

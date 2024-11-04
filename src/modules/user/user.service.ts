@@ -90,6 +90,20 @@ export class UserService {
     }
   }
 
+  async  updatePassword(id: string, password: string) {
+    const user = await this.userRepository.findOne({
+      where: {id: id}
+      });
+      if (!user) throw new HttpException("User does not exist", HttpStatus.NOT_FOUND);
+      try {
+        const updateUser = await this.userRepository.update({id:id}, {password: password});
+        if (updateUser.affected >= 1) {
+          return true}
+      } catch(error) {
+        console.log(error);
+      }
+  }
+
   async remove(id: string) {
     const user = await this.findById(id);
 

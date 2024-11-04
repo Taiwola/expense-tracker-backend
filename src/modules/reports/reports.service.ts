@@ -272,19 +272,16 @@ export class ReportsService {
   }
 
   
-  async  generatePDFReport(req: Request) {
-    const userId = req.user.id;
+  async generatePDFReport(userId: string): Promise<Buffer> {
     const user = await this.userService.findOne(userId);
 
     if (!user) {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
-    // Define the document content using pdfmake
-    const docDefinition: DocumentDefinition  = {
+    const docDefinition: DocumentDefinition = {
         content: [
             { text: 'Financial Report', style: 'header' },
-
             { text: 'Budgets', style: 'subheader' },
             {
                 table: {
@@ -297,7 +294,6 @@ export class ReportsService {
                 },
                 layout: 'lightHorizontalLines'
             },
-
             { text: 'Expenses', style: 'subheader' },
             {
                 table: {
@@ -310,7 +306,6 @@ export class ReportsService {
                 },
                 layout: 'lightHorizontalLines'
             },
-
             { text: 'Incomes', style: 'subheader' },
             {
                 table: {
@@ -337,21 +332,12 @@ export class ReportsService {
         }
     };
 
-    // Create PDF
-    const pdfDoc = pdfmake.createPdf(docDefinition);
-    const pdfBytes = await new Promise<Buffer>((resolve, reject) => {
-        pdfDoc.getBuffer((buffer) => {
-            resolve(buffer);
-        });
+    return new Promise<Buffer>((resolve, reject) => {
+        const pdfDoc = pdfmake.createPdf(docDefinition);
+        pdfDoc.getBuffer((buffer) => resolve(buffer));
     });
-
-    const randomUniquecode = randomUUID();
-    const filePath = `reports/user_${userId}_report_${randomUniquecode}.pdf`;
-
-    createWriteStream(filePath).write(pdfBytes);
-
-    return { message: 'PDF report generated successfully', filePath };
 }
+
   
 
 }

@@ -2,16 +2,20 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { CreateAuthDto } from './dto/createAuth.dto';
 import * as bcrypt from "bcryptjs";
+import {MailService} from "../services/mailer/mailer.service";
 import { plainToInstance } from 'class-transformer';
 import { UserResponseDto } from '../user/dto/userResponse.dto';
 import { SignInDto } from './dto/sign-in.dto';
 import {JwtService} from "@nestjs/jwt";
+import { ForgottenPasswordDto } from './dto/fogottenPassword.dto';
+import { ResetPasswordDto } from './dto/resetPasswordDto';
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly userService: UserService,
-        private readonly jwtService: JwtService
+        private readonly jwtService: JwtService,
+        private readonly mailerService: MailService
     ) {}
 
 
@@ -95,6 +99,43 @@ export class AuthService {
             status: true
         };
     }
+    async forgotPassword(data: ForgottenPasswordDto) {
+        const user = await this.userService.findByEmail(data.email);
+        if (!user) throw new HttpException("User not found", HttpStatus.NOT_FOUND);
     
+        // Generate a JWT token
+        const payload = { email: user.email, sub: user.id }; // Include user email and ID
+        const resetToken = this.jwtService.sign(payload);
     
+        const frontEndUrl = `http://localhost:5173/forgotpassword`;
+        const resetLink = `${frontEndUrl}/${resetToken}`;
+        
+       const send = await this.mailerService.sendResetPassword(data.email, resetLink);
+
+       if (!send) throw new HttpException("Error in sending mail", HttpStatus.BAD_REQUEST);
+
+        return {
+          message: "Mail sent",
+        };
+      }
+
+      async resetPassword(resetPasswordDto: ResetPasswordDto) {
+        let payload: { email: string, sub: string };
+        try {
+          payload = this.jwtService.verify(resetPasswordDto.token); // Verify the token
+        } catch (e) {
+          throw new HttpException("Invalid or expired reset token", HttpStatus.BAD_REQUEST);
+        }
+    
+        const user = await this.userService.findByEmail(payload.email);
+        if (!user) throw new HttpException("User not found", HttpStatus.NOT_FOUND);
+    
+        // Hash the new password
+        const hashedPassword = await bcrypt.hash(resetPasswordDto.newPassword, 10);
+
+        const update = await this.userService.updatePassword(user.id, hashedPassword);
+        if (!update) throw new HttpException("Error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+    
+        return { message: "Password updated successfully" };
+      }
 }

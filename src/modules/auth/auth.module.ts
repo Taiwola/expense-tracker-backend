@@ -4,11 +4,13 @@ import { AuthController } from './auth.controller';
 import { UserModule } from '../user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConfig } from 'config/jwt.config';
+import { ServiceModule } from '../services/service.module';
 
 @Module({
   imports: [
     UserModule,
-    JwtModule.registerAsync(jwtConfig)
+    JwtModule.registerAsync(jwtConfig),
+    ServiceModule
   ],
   controllers: [AuthController],
   providers: [AuthService],

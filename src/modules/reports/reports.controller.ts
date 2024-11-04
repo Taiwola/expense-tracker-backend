@@ -131,14 +131,24 @@ export class ReportsController {
   }
 
   @Get('export-pdf')
-  async exportReportToPDF(
+async exportReportToPDF(
     @Req() req: Request, 
-    @Res({passthrough: true}) res: Response) {
+    @Res({passthrough: true}) res: Response
+) {
     try {
-      const { filePath } = await this.reportsService.generatePDFReport(req);
-      return res.download(filePath); // Download the generated PDF
+        const userId = req.user.id;
+        const pdfBuffer = await this.reportsService.generatePDFReport(userId);
+
+        res.set({
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': 'attachment; filename="report.pdf"',
+            'Content-Length': pdfBuffer.length,
+        });
+
+        res.end(pdfBuffer);
     } catch (error) {
-      return res.status(error.status || 500).json({ message: error.message });
+        res.status(error.status || 500).json({ message: error.message });
     }
-  }
+}
+
 }
